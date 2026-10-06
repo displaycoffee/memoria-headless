@@ -1,0 +1,46 @@
+{
+	"name": "memoria-headless",
+	"displayName": "Memoria Headless",
+	"description": "Headless WordPress theme to handle settings for Astro frontend.",
+	"version": "1.0.0",
+	"type": "module",
+	"keywords": [],
+	"author": "displaycoffee",
+	"license": "ISC",
+	"homepage": "https://github.com/displaycoffee/memoria-headless#readme",
+	"scripts": {
+		"build": "vite build",
+		"dev": "vite",
+		"format": "prettier --write \"src/**/*.{js,ts}\"",
+		"lint": "eslint \"src/**/*.ts\" --quiet",
+		"typecheck": "tsc --noEmit"
+	},
+	"devDependencies": {
+		"@displaycoffee/styles": "^1.0.0",
+		"@eslint/js": "^9.39.5",
+		"@vitejs/plugin-basic-ssl": "^2.3.0",
+		"eslint": "^9.39.5",
+		"eslint-config-prettier": "^10.1.8",
+		"eslint-import-resolver-typescript": "^4.4.5",
+		"eslint-plugin-import": "^2.32.0",
+		"globals": "17.12.0",
+		"prettier": "^3.9.6",
+		"sass": "^1.104.1",
+		"typescript": "^6.0.3",
+		"typescript-eslint": "^8.70.0",
+		"vite": "^8.3.0"
+	},
+	"dependencies": {
+		"@displaycoffee/scripts": "^2.0.0"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/displaycoffee/memoria-headless.git"
+	},
+	"bugs": {
+		"url": "https://github.com/displaycoffee/memoria-headless/issues"
+	},
+	"browserslist": [
+		"last 2 versions"
+	]
+}

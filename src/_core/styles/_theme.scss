@@ -1,0 +1,60 @@
+//// BREAKPOINTS
+//// --------------------------------------------------------------------------
+//// Note: set without unit
+
+	$bp-01: 541;
+	$bp-02: 768;
+	$bp-03: 992;
+	$bp-04: 1200;
+
+//// CONTAINERS
+//// --------------------------------------------------------------------------
+
+	$container-base: 1600px;
+
+//// SPACING
+//// --------------------------------------------------------------------------
+
+	$spacing-x1: 4px;
+	$spacing-x2: $spacing-x1 * 2;
+	$spacing-x3: $spacing-x1 * 3;
+	$spacing-x4: $spacing-x1 * 4;
+	$spacing-x5: $spacing-x1 * 5;
+	$spacing-x6: $spacing-x1 * 6;
+	$spacing-x7: $spacing-x1 * 7;
+	$spacing-x8: $spacing-x1 * 8;
+	$spacing-x10: $spacing-x1 * 10;  
+	$spacing-x12: $spacing-x1 * 12;
+
+//// COLORS
+//// --------------------------------------------------------------------------
+
+	$color-01: #ffffff; // white
+	$color-02: #000000; // black
+	$color-03: #fdfdfd; // main
+	$color-04: #333333; // light text
+	$color-05: #3858e9; // links
+	$color-06: #b32d2e; // remove button red
+	$color-07: false;
+	$color-08: #f0f0f0;
+	$color-09: rgba(#000000, 0.75); // overlay
+	$color-10: false;
+	$color-11: false;
+	$color-12: #f7f79e; // highlights and errors
+
+//// FONTS
+//// --------------------------------------------------------------------------
+
+	$font-family-01: 'Open Sans', 'Fallback', sans-serif; // main font family: used for most text elements
+	$font-family-02: 'Montserrat', 'Fallback Header', sans-serif; // header font family: used in header elements
+	$font-weight-01: 700; // main font weight: used for things like bold text and active selections
+	$font-weight-02: 700; // header font weight: used in header elements
+	$font-style: false;
+	$font-transform: uppercase;
+	$font-size-global: 14px;
+	$font-size-base: 16px;	
+
+//// ICONS
+//// --------------------------------------------------------------------------
+
+	$icon-size: 14px;

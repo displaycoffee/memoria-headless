@@ -1,0 +1,98 @@
+// Local Sass modules
+@use '@displaycoffee/styles/functions';
+@use '@displaycoffee/styles/mixins';
+@use '_core/styles/_theme';
+
+//// CONTENT - POSTS AND PAGES
+//// --------------------------------------------------------------------------
+
+	// Configuration
+
+	$checkbox-mobile: 24px; // checkbox size for mobile
+	$checkbox-desktop: 16px; // checkbox size for desktop
+
+	// Style block
+
+	.metabox-location-side {
+		#poststuff {
+			.postbox {
+				margin: -1px 0 0 0;
+				padding: 16px;
+				&.postbox.closed {
+					padding-bottom: 0;
+					.postbox-header {
+						.handle-actions {
+							.handlediv {
+								background-image: functions.svg-encode('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"></path></svg>');
+							}
+						}
+					}
+				}
+				.postbox-header .hndle, .inside {
+					padding: 0;
+				}
+				.postbox-header {
+					position: relative;
+					margin: -16px -16px 5px -16px;
+					padding: 16px 48px 16px 16px;
+					&:hover {
+						background-color: theme.$color-08;
+						.hndle {
+							color: theme.$color-05;
+						}
+					}
+					&, .hndle {
+						cursor: pointer;
+					}
+					.hndle {
+						font-size: 13px;
+						font-weight: 499;
+						color: theme.$color-04;
+					}
+					.handle-actions {
+						@include mixins.position($type: absolute, $right: 16px, $top: 50%);
+						@include mixins.transform(translateY(-50%));
+						.handlediv {
+							@include mixins.sizing(24px, 24px);
+							background-repeat: no-repeat;
+							background-position: center center;
+							background-image: functions.svg-encode('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6.5 12.4L12 8l5.5 4.4-.9 1.2L12 10l-4.5 3.6-1-1.2z"></path></svg>');
+							.toggle-indicator {
+								&:before {
+									display: none;
+								}
+							}
+						}
+					}
+				}
+				.inside {
+					.components-checkbox-control__input-container {
+						margin-right: 8px;
+						width: $checkbox-mobile;
+						.components-checkbox-control__input[type='checkbox'], svg.components-checkbox-control__checked {
+							@include mixins.sizing($checkbox-mobile, $checkbox-mobile);
+						}
+					}
+				}
+			}	
+		}
+	}
+	@include mixins.respond(600px) {
+		.metabox-location-side {
+			#poststuff {
+				.postbox {
+					.inside {
+						.components-checkbox-control__input-container {
+							width: $checkbox-desktop;
+							.components-checkbox-control__input[type='checkbox'] {
+								@include mixins.sizing($checkbox-desktop, $checkbox-desktop);
+							}
+							svg.components-checkbox-control__checked {
+								@include mixins.sizing($checkbox-desktop + 4, $checkbox-desktop + 4);
+							}
+						}
+					}
+				}	
+			}
+		}
+	}

@@ -1,0 +1,60 @@
+// Local Sass modules
+@use '@displaycoffee/styles/functions';
+@use '@displaycoffee/styles/mixins';
+@use '_core/styles/_theme';
+
+//// THEME OPTIONS
+//// --------------------------------------------------------------------------
+
+	.memoria-theme-options {
+		.wrap {
+			form {
+				max-width: 750px;
+			}
+			.regular-text, textarea {
+				width: 100%;
+			}
+			.media-picker {
+				.media-picker-preview {
+					width: 100%;
+					margin: 0 0 theme.$spacing-x4 0;
+					&:not(.site-icon-preview) {
+						.media-picker-wrap img {
+							max-height: 150px;
+						}
+					}
+					&.has-media {
+						& ~ {
+							.media-picker-action-buttons {
+								margin: 0 0 theme.$spacing-x4 0;
+							}
+						}
+					}
+				}
+				.site-icon-preview {
+					height: 88px;
+				}
+				.media-picker-remove {
+					color: theme.$color-06;
+					&, &:hover {
+						border-color: theme.$color-06;
+					}
+					&:hover {
+						background: theme.$color-06;
+						color: theme.$color-01;
+						box-shadow: 0 0 0 1px theme.$color-06;
+					}
+				}
+			}
+			td:has(.character-count) {
+				position: relative;
+				.description {
+					padding-right: 65px;
+				}
+				.character-count {
+					@include mixins.position($type: absolute, $right: 10px, $top: auto);
+					padding-right: 0;
+				}
+			}
+		}
+	}

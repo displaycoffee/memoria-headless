@@ -87,3 +87,41 @@ function memoria_register_graphql_fields(): void {
 	register_graphql_field('Page', 'hideSidebar', $args);
 }
 add_action('graphql_register_types', 'memoria_register_graphql_fields');
+
+// Expose search pagination to WPGraphQL, since its cursor pagination has no total or page offset
+function memoria_register_graphql_search_fields(): void {
+	register_graphql_field('RootQueryToPostConnectionWhereArgs', 'offset', [
+		'type'        => 'Int',
+		'description' => 'Number of posts to skip, for page-number pagination',
+	]);
+
+	register_graphql_field('RootQuery', 'searchTotal', [
+		'type'        => 'Int',
+		'description' => 'Total number of published posts matching a search',
+		'args'        => [
+			'search' => ['type' => ['non_null' => 'String']],
+		],
+		'resolve'     => function ($root, array $args) {
+			$query = new WP_Query([
+				'fields'         => 'ids',
+				'post_status'    => 'publish',
+				'post_type'      => 'post',
+				'posts_per_page' => 1,
+				's'              => $args['search'],
+			]);
+
+			return (int) $query->found_posts;
+		},
+	]);
+}
+add_action('graphql_register_types', 'memoria_register_graphql_search_fields');
+
+// Pass the offset where arg through to WP_Query
+function memoria_map_graphql_offset(array $query_args, array $where_args): array {
+	if (isset($where_args['offset'])) {
+		$query_args['offset'] = max(0, (int) $where_args['offset']);
+	}
+
+	return $query_args;
+}
+add_filter('graphql_map_input_fields_to_wp_query', 'memoria_map_graphql_offset', 10, 2);

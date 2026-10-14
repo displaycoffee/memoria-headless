@@ -90,22 +90,26 @@ add_action('graphql_register_types', 'memoria_register_graphql_fields');
 
 // Expose search pagination to WPGraphQL, since its cursor pagination has no total or page offset
 function memoria_register_graphql_search_fields(): void {
-	register_graphql_field('RootQueryToPostConnectionWhereArgs', 'offset', [
-		'type'        => 'Int',
-		'description' => 'Number of posts to skip, for page-number pagination',
-	]);
+	foreach (['RootQueryToPostConnectionWhereArgs', 'RootQueryToPageConnectionWhereArgs'] as $where_args) {
+		register_graphql_field($where_args, 'offset', [
+			'type'        => 'Int',
+			'description' => 'Number of items to skip, for page-number pagination',
+		]);
+	}
 
 	register_graphql_field('RootQuery', 'searchTotal', [
 		'type'        => 'Int',
-		'description' => 'Total number of published posts matching a search',
+		'description' => 'Total number of published posts or pages matching a search',
 		'args'        => [
-			'search' => ['type' => ['non_null' => 'String']],
+			'search'   => ['type' => ['non_null' => 'String']],
+			'postType' => ['type' => 'String', 'description' => 'Either "post" (default) or "page"'],
 		],
 		'resolve'     => function ($root, array $args) {
+			$post_type = ($args['postType'] ?? 'post') === 'page' ? 'page' : 'post';
 			$query = new WP_Query([
 				'fields'         => 'ids',
 				'post_status'    => 'publish',
-				'post_type'      => 'post',
+				'post_type'      => $post_type,
 				'posts_per_page' => 1,
 				's'              => $args['search'],
 			]);

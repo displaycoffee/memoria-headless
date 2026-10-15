@@ -129,3 +129,102 @@ function memoria_map_graphql_offset(array $query_args, array $where_args): array
 	return $query_args;
 }
 add_filter('graphql_map_input_fields_to_wp_query', 'memoria_map_graphql_offset', 10, 2);
+
+// Point author links at the frontend's /authors/ route (WordPress nests them under the /posts/ permalink base)
+function memoria_author_link(string $link, int $author_id, string $author_nicename): string {
+	return home_url('/authors/' . $author_nicename . '/');
+}
+add_filter('author_link', 'memoria_author_link', 10, 3);
+
+// Use flat category links to match the frontend (slugs are unique, so child categories don't need their parent in the path)
+function memoria_category_link(string $link, WP_Term $term, string $taxonomy): string {
+	return $taxonomy === 'category' ? home_url('/categories/' . $term->slug . '/') : $link;
+}
+add_filter('term_link', 'memoria_category_link', 10, 3);
+
+// Make dropdown blocks work on the frontend: each option's value is its archive path, and WordPress's inline navigation script is removed (the frontend navigates on change instead)
+function memoria_render_dropdown_block(string $block_content, array $block): string {
+	if (empty($block['attrs']['displayAsDropdown'])) {
+		return $block_content;
+	}
+
+	// Category and tag options hold term slugs, so swap them for term links (archive options are already links)
+	$taxonomy = $block['blockName'] === 'core/categories' ? ($block['attrs']['taxonomy'] ?? 'category') : '';
+	$block_content = preg_replace('#<script\b[^>]*>.*?</script>#s', '', $block_content);
+	$processor = new WP_HTML_Tag_Processor($block_content);
+
+	while ($processor->next_tag()) {
+		if ($processor->get_tag() === 'SELECT') {
+			$processor->set_attribute('data-navigation-select', true);
+		} elseif ($processor->get_tag() === 'OPTION') {
+			$value = (string) $processor->get_attribute('value');
+
+			// Placeholder option ("Select Category", etc.)
+			if ($value === '' || $value === '-1') {
+				$processor->set_attribute('value', '');
+				continue;
+			}
+
+			if ($taxonomy) {
+				$link = get_term_link($value, $taxonomy);
+				$value = is_wp_error($link) ? '' : $link;
+			}
+
+			$processor->set_attribute('value', $value ? wp_make_link_relative($value) : '');
+		}
+	}
+
+	return $processor->get_updated_html();
+}
+add_filter('render_block_core/archives', 'memoria_render_dropdown_block', 10, 2);
+add_filter('render_block_core/categories', 'memoria_render_dropdown_block', 10, 2);
+
+// Send search blocks to the frontend's search page, which reads the query from "q"
+function memoria_render_search_block(string $block_content): string {
+	$processor = new WP_HTML_Tag_Processor($block_content);
+
+	while ($processor->next_tag()) {
+		if ($processor->get_tag() === 'FORM') {
+			$processor->set_attribute('action', '/search');
+		} elseif ($processor->get_tag() === 'INPUT' && $processor->get_attribute('name') === 's') {
+			$processor->set_attribute('name', 'q');
+		}
+	}
+
+	return $processor->get_updated_html();
+}
+add_filter('render_block_core/search', 'memoria_render_search_block');
+
+// Hide blocks the static frontend can't support from the inserter (date archives, comments, login)
+// Note: they stay registered, so any already in content still render (e.g. the block preview posts used for styling)
+function memoria_allowed_block_types(bool|array $allowed_block_types): bool|array {
+	$hidden = [
+		'core/archives',
+		'core/calendar',
+		'core/comment-author-name',
+		'core/comment-content',
+		'core/comment-date',
+		'core/comment-edit-link',
+		'core/comment-reply-link',
+		'core/comment-template',
+		'core/comments',
+		'core/comments-pagination',
+		'core/comments-pagination-next',
+		'core/comments-pagination-numbers',
+		'core/comments-pagination-previous',
+		'core/comments-title',
+		'core/latest-comments',
+		'core/loginout',
+		'core/post-comments-count',
+		'core/post-comments-form',
+		'core/post-comments-link',
+	];
+
+	// true means every registered block is allowed, so start from the full list
+	if ($allowed_block_types === true) {
+		$allowed_block_types = array_keys(WP_Block_Type_Registry::get_instance()->get_all_registered());
+	}
+
+	return is_array($allowed_block_types) ? array_values(array_diff($allowed_block_types, $hidden)) : $allowed_block_types;
+}
+add_filter('allowed_block_types_all', 'memoria_allowed_block_types');

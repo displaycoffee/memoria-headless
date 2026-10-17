@@ -228,3 +228,18 @@ function memoria_allowed_block_types(bool|array $allowed_block_types): bool|arra
 	return is_array($allowed_block_types) ? array_values(array_diff($allowed_block_types, $hidden)) : $allowed_block_types;
 }
 add_filter('allowed_block_types_all', 'memoria_allowed_block_types');
+
+// Remove block styles the frontend doesn't style from the editor's style picker
+// Note: existing blocks keep their is-style-* class, they just can't be picked anymore
+function memoria_block_styles(array $metadata): array {
+	$removed = [
+		'core/button' => ['outline'],
+	];
+
+	if (isset($removed[$metadata['name']], $metadata['styles'])) {
+		$metadata['styles'] = array_values(array_filter($metadata['styles'], fn(array $style): bool => !in_array($style['name'], $removed[$metadata['name']], true)));
+	}
+
+	return $metadata;
+}
+add_filter('block_type_metadata', 'memoria_block_styles');

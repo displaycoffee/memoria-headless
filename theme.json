@@ -2,14 +2,19 @@
 	"version": 3,
 	"settings": {
 		"color": {
+			"custom": false,
+			"customDuotone": false,
+			"customGradient": false,
+			"defaultDuotone": false,
+			"defaultGradients": false,
+			"defaultPalette": false,
+			"duotone": [],
+			"gradients": [],
 			"palette": [
-				{ "slug": "color-01", "name": "White", "color": "#ffffff" },
-				{ "slug": "color-02", "name": "Black", "color": "#000000" },
-				{ "slug": "color-03", "name": "Background", "color": "#fdfdfd" },
-				{ "slug": "color-04", "name": "Text", "color": "#333333" },
-				{ "slug": "color-05", "name": "Link", "color": "#4762cb" },
-				{ "slug": "color-09", "name": "Overlay", "color": "rgba(0, 0, 0, 0.75)" },
-				{ "slug": "color-12", "name": "Highlight", "color": "#f7f79e" }
+				{ "slug": "body", "name": "Text", "color": "#333333" },
+				{ "slug": "bg", "name": "Background", "color": "#fdfdfd" },
+				{ "slug": "link", "name": "Link", "color": "#4762cb" },
+				{ "slug": "highlight", "name": "Highlight", "color": "#f7f79e" }
 			]
 		},
 		"layout": {
@@ -152,7 +157,7 @@
 			}
 		},
 		"color": {
-			"text": "var:preset|color|color-04"
+			"text": "var:preset|color|body"
 		},
 		"typography": {
 			"fontFamily": "var(--wp--preset--font-family--primary)",
@@ -206,11 +211,11 @@
 			},
 			"link": {
 				"color": {
-					"text": "var:preset|color|color-05"
+					"text": "var:preset|color|link"
 				},
 				":hover": {
 					"color": {
-						"text": "var:preset|color|color-04"
+						"text": "var:preset|color|body"
 					}
 				}
 			}

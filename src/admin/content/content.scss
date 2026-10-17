@@ -37,7 +37,7 @@
 					padding: 16px 48px 16px 16px;
 					&:hover {
 						background-color: theme.$color-08;
-						.hndle {
+						.hndle:hover {
 							color: theme.$color-05;
 						}
 					}
@@ -46,12 +46,15 @@
 					}
 					.hndle {
 						font-size: 13px;
-						font-weight: 499;
+						font-weight: var(--wpds-typography-font-weight-emphasis,600);
 						color: theme.$color-04;
 					}
 					.handle-actions {
 						@include mixins.position($type: absolute, $right: 16px, $top: 50%);
 						@include mixins.transform(translateY(-50%));
+						.wp-tooltip:not(:has(.handlediv)) {
+							display: none;
+						}
 						.handlediv {
 							@include mixins.sizing(24px, 24px);
 							background-repeat: no-repeat;

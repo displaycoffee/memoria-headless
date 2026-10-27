@@ -5,11 +5,6 @@
 			"custom": false,
 			"customDuotone": false,
 			"customGradient": false,
-			"defaultDuotone": false,
-			"defaultGradients": false,
-			"defaultPalette": false,
-			"duotone": [],
-			"gradients": [],
 			"palette": [
 				{ "slug": "body", "name": "Text", "color": "#333333" },
 				{ "slug": "bg", "name": "Background", "color": "#fdfdfd" },

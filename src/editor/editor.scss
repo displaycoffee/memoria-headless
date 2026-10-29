@@ -1,0 +1,23 @@
+// Built-in Sass modules
+@use 'sass:meta';
+
+// Local Sass modules
+@use '@memoria/_core/styles/_theme';
+
+//// EDITOR
+//// --------------------------------------------------------------------------
+//// Note: block styles come from memoria, so the editor matches the frontend. @memoria/ maps to memoria's src (see memoriaImporter in vite.config.js).
+
+	// Imports
+
+	@use '@memoria/_core/styles/_root';
+
+	// Style block
+	// Note: the canvas uses memoria's background and text colors, since _root switches color-scheme to dark with the OS, but WordPress keeps the canvas white
+	// Note: block styles are nested in .editor-styles-wrapper, since this file also loads on the admin page around the editor's iframe (e.g. memoria's h1 - h6 rules would style the sidebar's panel headings)
+
+	.editor-styles-wrapper {
+		background-color: theme.$color-bg;
+		color: theme.$color-body;
+		@include meta.load-css('@memoria/wp/blocks/styles/blocks');
+	}

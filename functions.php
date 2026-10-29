@@ -44,6 +44,31 @@ function memoria_enqueue_scripts(): void {
 }
 add_action('admin_enqueue_scripts', 'memoria_enqueue_scripts');
 
+// Enqueue memoria's block styles in the editor canvas
+// Note: enqueue_block_assets is the hook that reaches inside the editor's iframe (admin_enqueue_scripts doesn't), and it also runs on the frontend, hence is_admin()
+// Note: in dev, styles are served by Vite but aren't hot reloaded inside the iframe, so refresh the editor to see changes
+function memoria_enqueue_editor_styles(): void {
+	if (!is_admin()) {
+		return;
+	}
+
+	$config = memoria_config();
+	$is_dev = memoria_is_dev();
+	$version = wp_get_theme()->get('Version');
+
+	if ($is_dev) {
+		wp_enqueue_style('memoria-editor-styles', $config->dev->editor, [], null);
+	} else {
+		wp_enqueue_style('memoria-editor-styles', $config->paths->css . '/editor.css', [], $version);
+	}
+
+	// Keep the canvas in light mode (memoria's dark mode follows the OS unless data-theme is set, same as its theme toggle)
+	wp_register_script('memoria-editor-theme', false, [], null);
+	wp_enqueue_script('memoria-editor-theme');
+	wp_add_inline_script('memoria-editor-theme', "document.documentElement.setAttribute('data-theme', 'light');");
+}
+add_action('enqueue_block_assets', 'memoria_enqueue_editor_styles');
+
 // Register nav menus so they appear in WP admin and are queryable
 function memoria_init_menus(): void {
 	register_nav_menus([

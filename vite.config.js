@@ -1,7 +1,7 @@
 /* Packages */
 import { cpSync, readdirSync } from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import { defineConfig } from 'vite';
 import basicSsl from '@vitejs/plugin-basic-ssl';
 
@@ -9,6 +9,7 @@ import basicSsl from '@vitejs/plugin-basic-ssl';
 const themePath = fileURLToPath(new URL('.', import.meta.url));
 const srcPath = fileURLToPath(new URL('./src', import.meta.url));
 const distPath = fileURLToPath(new URL('./dist', import.meta.url));
+const memoriaSrcUrl = pathToFileURL(fileURLToPath(new URL('../../../../memoria/src/', import.meta.url))); // memoria (Astro) project, a sibling of wordpress
 
 /* Theme files WordPress needs at runtime, copied into dist so it's a complete theme to upload (root PHP files are added automatically) */
 const themeFiles = ['admin', 'assets', 'screenshot.png', 'style.css', 'theme.json'];
@@ -42,6 +43,18 @@ const themeCopy = () => {
 	};
 };
 
+/* Sass importer for using memoria's styles in the editor */
+/* Note: @memoria/ loads from memoria's src, and memoria's own files resolve against memoria's src (not this theme's), so e.g. their @use '_core/styles/_theme' gets memoria's theme */
+/* Note: importers run before loadPaths, and relative loads (e.g. @use '_colors') are already resolved next to the file before importers run */
+const memoriaImporter = {
+	findFileUrl(url, { containingUrl }) {
+		if (url.startsWith('@memoria/')) return new URL(url.slice('@memoria/'.length), memoriaSrcUrl);
+		const isMemoriaFile = containingUrl?.href.toLowerCase().startsWith(memoriaSrcUrl.href.toLowerCase());
+		if (isMemoriaFile && !url.startsWith('@') && !url.includes(':')) return new URL(url, memoriaSrcUrl);
+		return null;
+	},
+};
+
 export default defineConfig({
 	root: 'src',
 	publicDir: false, // Static theme files (PHP, fonts, style.css) live at the theme root, where WordPress expects them
@@ -63,6 +76,7 @@ export default defineConfig({
 		preprocessorOptions: {
 			scss: {
 				loadPaths: [srcPath], // Lets Sass @use files from src without relative paths, e.g. @use '_core/styles/_theme'
+				importers: [memoriaImporter],
 			},
 		},
 	},
@@ -74,10 +88,11 @@ export default defineConfig({
 		},
 		rollupOptions: {
 			input: {
-				admin: `${srcPath}/admin.ts`,
+				admin: `${srcPath}/admin/admin.ts`,
+				editor: `${srcPath}/editor/editor.scss`,
 			},
 			output: {
-				// Fixed names (no hashes) so functions.php can enqueue assets/js/admin.js and assets/css/admin.css directly
+				// Fixed names (no hashes) so functions.php can enqueue assets/js/admin.js, assets/css/admin.css, and assets/css/editor.css directly
 				assetFileNames: 'assets/[ext]/[name][extname]',
 				chunkFileNames: 'assets/js/[name].js',
 				entryFileNames: 'assets/js/[name].js',

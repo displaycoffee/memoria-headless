@@ -35,14 +35,14 @@
 					height: 88px;
 				}
 				.media-picker-remove {
-					color: theme.$color-06;
+					color: theme.$color-red;
 					&, &:hover {
-						border-color: theme.$color-06;
+						border-color: theme.$color-red;
 					}
 					&:hover {
-						background: theme.$color-06;
-						color: theme.$color-01;
-						box-shadow: 0 0 0 1px theme.$color-06;
+						background: theme.$color-red;
+						color: theme.$color-white;
+						box-shadow: 0 0 0 1px theme.$color-red;
 					}
 				}
 			}

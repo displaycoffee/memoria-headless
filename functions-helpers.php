@@ -20,7 +20,8 @@ function memoria_config(): object {
 		'dev' => (object) [
 			'ddev' => 'ddev.site',
 			'client' => $vite . '/@vite/client',
-			'admin' => $vite . '/admin.ts'
+			'admin' => $vite . '/admin/admin.ts',
+			'editor' => $vite . '/editor/editor.scss?direct' // ?direct makes Vite serve compiled CSS instead of a JS module
 		],
 		'paths' => (object) [
 			'css' => $theme . '/assets/css',

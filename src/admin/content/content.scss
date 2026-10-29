@@ -36,9 +36,9 @@
 					margin: -16px -16px 5px -16px;
 					padding: 16px 48px 16px 16px;
 					&:hover {
-						background-color: theme.$color-08;
+						background-color: theme.$color-bg;
 						.hndle:hover {
-							color: theme.$color-05;
+							color: theme.$color-link;
 						}
 					}
 					&, .hndle {
@@ -47,7 +47,7 @@
 					.hndle {
 						font-size: 13px;
 						font-weight: var(--wpds-typography-font-weight-emphasis,600);
-						color: theme.$color-04;
+						color: theme.$color-body;
 					}
 					.handle-actions {
 						@include mixins.position($type: absolute, $right: 16px, $top: 50%);

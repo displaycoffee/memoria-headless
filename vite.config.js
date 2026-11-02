@@ -16,12 +16,13 @@ const themeFiles = ['admin', 'assets', 'screenshot.png', 'style.css', 'theme.jso
 
 /* Vite plugin that fully reloads the page when a theme PHP file changes */
 /* Note: the PHP lives outside of root (src), so the theme folder has to be added to the watcher (chokidar doesn't take globs) */
+/* Note: memoria's src is outside of root too, so it's also added, otherwise changes to its SCSS don't recompile editor.scss */
 const phpReload = () => {
 	return {
 		name: 'php-reload',
 		apply: 'serve',
 		configureServer(server) {
-			server.watcher.add(themePath);
+			server.watcher.add([themePath, fileURLToPath(memoriaSrcUrl)]);
 			server.watcher.on('change', (file) => {
 				if (file.endsWith('.php')) server.ws.send({ type: 'full-reload', path: '*' });
 			});

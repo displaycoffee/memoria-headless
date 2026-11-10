@@ -47,6 +47,7 @@ add_action('admin_enqueue_scripts', 'memoria_enqueue_scripts');
 // Enqueue memoria's block styles in the editor canvas
 // Note: enqueue_block_assets is the hook that reaches inside the editor's iframe (admin_enqueue_scripts doesn't), and it also runs on the frontend, hence is_admin()
 // Note: in dev, styles are served by Vite but aren't hot reloaded inside the iframe, so refresh the editor to see changes
+// Note: load after wp-block-library, since memoria's block styles have the same specificity as its styles in the editor (see editor.scss), so ties go to memoria
 function memoria_enqueue_editor_styles(): void {
 	if (!is_admin()) {
 		return;
@@ -57,9 +58,9 @@ function memoria_enqueue_editor_styles(): void {
 	$version = wp_get_theme()->get('Version');
 
 	if ($is_dev) {
-		wp_enqueue_style('memoria-editor-styles', $config->dev->editor, [], null);
+		wp_enqueue_style('memoria-editor-styles', $config->dev->editor, ['wp-block-library'], null);
 	} else {
-		wp_enqueue_style('memoria-editor-styles', $config->paths->css . '/editor.css', [], $version);
+		wp_enqueue_style('memoria-editor-styles', $config->paths->css . '/editor.css', ['wp-block-library'], $version);
 	}
 
 	// Keep the canvas in light mode (memoria's dark mode follows the OS unless data-theme is set, same as its theme toggle)

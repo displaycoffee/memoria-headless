@@ -8,7 +8,7 @@
 			"palette": [
 				{ "slug": "body", "name": "Text", "color": "#333333" },
 				{ "slug": "bg", "name": "Background", "color": "#fdfdfd" },
-				{ "slug": "link", "name": "Link", "color": "#4762cb" },
+				{ "slug": "link-body", "name": "Link", "color": "#4762cb" },
 				{ "slug": "highlight", "name": "Highlight", "color": "#f7f79e" }
 			]
 		},

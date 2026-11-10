@@ -120,6 +120,56 @@ function memoria_register_graphql_search_fields(): void {
 }
 add_action('graphql_register_types', 'memoria_register_graphql_search_fields');
 
+// Expose rendered content with its block support styles to WPGraphQL
+// Note: block supports (layout, elements, position, visibility, states) add classes while rendering and put their CSS in the block-supports style store, which WordPress only prints in its own page head, so it never reaches the frontend
+// Note: html and styles come from the same render, since some of those classes come from a counter (e.g. wp-elements-5), so a second render's CSS wouldn't match. Query renderedContent instead of content, not both
+function memoria_register_graphql_rendered_content(): void {
+	register_graphql_object_type('MemoriaRenderedContent', [
+		'description' => 'Rendered content and the block support styles from the same render',
+		'fields'      => [
+			'html'   => ['type' => 'String', 'description' => 'Rendered content, the same as the content field'],
+			'styles' => ['type' => 'String', 'description' => 'CSS for the block support classes in html (wp-container-*, wp-elements-*, etc.), or null when there is none'],
+		],
+	]);
+
+	$args = [
+		'type'        => 'MemoriaRenderedContent',
+		'description' => 'Rendered content with its block support styles',
+		'resolve'     => 'memoria_render_content',
+	];
+	register_graphql_field('Post', 'renderedContent', $args);
+	register_graphql_field('Page', 'renderedContent', $args);
+}
+add_action('graphql_register_types', 'memoria_register_graphql_rendered_content');
+
+// Render a post's content and collect the block support CSS that render adds
+function memoria_render_content(WPGraphQL\Model\Post $post): ?array {
+	$wp_post = get_post($post->databaseId);
+
+	// Match the content field, which is null for empty and password-protected posts
+	if (!$wp_post || $wp_post->post_content === '' || post_password_required($wp_post)) {
+		return null;
+	}
+
+	// Empty the store first, so each post only gets its own rules (a list query renders several posts in one request)
+	$store = WP_Style_Engine::get_store('block-supports');
+	foreach (array_keys($store->get_all_rules()) as $key) {
+		$store->remove_rule($key);
+	}
+
+	// Render the way WPGraphQL's content field does, with the post set up as the global post for filters and shortcodes
+	$post->setup();
+	$html = $post->html_entity_decode(apply_filters('the_content', $wp_post->post_content), 'contentRendered', false);
+	$post->tear_down();
+
+	$styles = wp_style_engine_get_stylesheet_from_context('block-supports', ['prettify' => false]);
+
+	return [
+		'html'   => $html,
+		'styles' => $styles !== '' ? $styles : null,
+	];
+}
+
 // Pass the offset where arg through to WP_Query
 function memoria_map_graphql_offset(array $query_args, array $where_args): array {
 	if (isset($where_args['offset'])) {

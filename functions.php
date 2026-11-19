@@ -98,6 +98,20 @@ function memoria_init_dev_api(): void {
 }
 add_action('rest_api_init', 'memoria_init_dev_api');
 
+// Add the gallery's lightbox button type (icon, text, or both) to its markup for memoria's lightbox (Lightbox.tsx)
+// Note: WordPress only passes navigationButtonType to the images as block context and puts it in its Interactivity API state, neither of which reaches renderedContent
+function memoria_render_gallery_navigation_type(string $block_content, array $block): string {
+	$type = $block['attrs']['navigationButtonType'] ?? 'icon';
+	$processor = new WP_HTML_Tag_Processor($block_content);
+
+	if ($processor->next_tag(array('class_name' => 'wp-block-gallery'))) {
+		$processor->set_attribute('data-navigation-button-type', $type);
+	}
+
+	return $processor->get_updated_html();
+}
+add_filter('render_block_core/gallery', 'memoria_render_gallery_navigation_type', 10, 2);
+
 // Remove unused Appearance submenu items (priority 999 ensures WP has registered them first)
 function memoria_admin_menu_removal(): void {
 	global $submenu;

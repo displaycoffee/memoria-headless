@@ -112,6 +112,100 @@ function memoria_render_gallery_navigation_type(string $block_content, array $bl
 }
 add_filter('render_block_core/gallery', 'memoria_render_gallery_navigation_type', 10, 2);
 
+// Make navigation blocks work with memoria's scripts: submenus become dropdowns (dropdown.ts) and the responsive container becomes a slideout dialog (overlay.ts, slideout.ts)
+// Note: WordPress opens both with its Interactivity API (navigation/view.js), which never reaches renderedContent
+function memoria_render_navigation_block(string $block_content): string {
+	// Swap the responsive container's div for a dialog, so it opens as a modal with a backdrop, inert page, and focus handling
+	// Note: the container is the nav's last child, so its closing tag is the last </div> before </nav>
+	$block_content = preg_replace('#<div(?=\s[^>]*\bclass="wp-block-navigation__responsive-container[\s"])#', '<dialog', $block_content, 1, $count);
+	if ($count) {
+		$block_content = preg_replace('#</div>(\s*</nav>\s*)$#', '</dialog>$1', $block_content, 1);
+	}
+
+	$overlay_id = preg_match('#<dialog\s[^>]*\bid="([^"]+)"#', $block_content, $matches) ? $matches[1] : '';
+	$processor = new WP_HTML_Tag_Processor($block_content);
+	$label = '';
+	$submenu_id = '';
+
+	while ($processor->next_tag()) {
+		$tag = $processor->get_tag();
+
+		// Remove the Interactivity API directives, since WordPress processes them after this filter (e.g. data-wp-bind--aria-expanded drops the aria-expanded set below)
+		foreach ($processor->get_attribute_names_with_prefix('data-wp-') ?? array() as $name) {
+			$processor->remove_attribute($name);
+		}
+
+		if ($tag === 'NAV' && $processor->has_class('wp-block-navigation')) {
+			$label = (string) $processor->get_attribute('aria-label');
+		} elseif ($tag === 'LI' && $processor->has_class('has-child')) {
+			// Submenus that are always open (open-always) stay as they are
+			// Note: each item's toggle and submenu come before any nested item, so the id carries over to them
+			$submenu_id = $processor->has_class('open-always') ? '' : wp_unique_id('navigation-submenu-');
+			if ($submenu_id) {
+				$processor->add_class('dropdown');
+				$processor->add_class('dropdown-collapsed');
+				$processor->set_attribute('data-close-on-click', 'true');
+				$processor->remove_attribute('tabindex');
+			}
+		} elseif ($tag === 'BUTTON' && $processor->has_class('wp-block-navigation-submenu__toggle') && $submenu_id) {
+			$processor->add_class('dropdown-button-toggle');
+			$processor->set_attribute('aria-controls', $submenu_id);
+			$processor->set_attribute('aria-expanded', 'false');
+		} elseif ($tag === 'UL' && $processor->has_class('wp-block-navigation__submenu-container') && $submenu_id) {
+			$processor->add_class('dropdown-content');
+			$processor->set_attribute('id', $submenu_id);
+		} elseif ($tag === 'BUTTON' && $processor->has_class('wp-block-navigation__responsive-container-open') && $overlay_id) {
+			$processor->set_attribute('aria-controls', $overlay_id);
+			$processor->set_attribute('aria-expanded', 'false');
+			$processor->set_attribute('data-overlay-open', $overlay_id);
+		} elseif ($tag === 'DIALOG') {
+			// Overlay on mobile (not hidden-by-default) shows its content inline on desktop, so slideout.ts closes it when the window grows past the breakpoint
+			foreach (array('overlay', 'overlay-dismissible', 'slideout', 'slideout-horizontal', 'slideout-left') as $class) {
+				$processor->add_class($class);
+			}
+			$processor->set_attribute('aria-label', $label ?: 'Menu');
+			$processor->set_attribute('data-close-on-backdrop', 'true');
+			$processor->set_attribute('data-slideout-direction', 'left');
+			if (!$processor->has_class('hidden-by-default')) {
+				$processor->set_attribute('data-close-on-desktop', 'true');
+			}
+			$processor->remove_attribute('tabindex');
+		} elseif ($tag === 'DIV' && $processor->has_class('wp-block-navigation__responsive-close')) {
+			$processor->add_class('overlay-content');
+			$processor->remove_attribute('tabindex');
+		} elseif ($tag === 'DIV' && $processor->has_class('wp-block-navigation__responsive-container-content')) {
+			// slideout.ts closes the overlay when a link inside .slideout-body is clicked
+			$processor->add_class('slideout-body');
+		} elseif ($tag === 'BUTTON' && $processor->has_class('wp-block-navigation__responsive-container-close')) {
+			$processor->set_attribute('data-autofocus', true);
+			$processor->set_attribute('data-overlay-close', true);
+		}
+	}
+
+	return $processor->get_updated_html();
+}
+add_filter('render_block_core/navigation', 'memoria_render_navigation_block', 10, 1);
+
+// Send login / logout blocks to the dashboard after logging in
+// Note: the block renders during the GraphQL request, so WordPress's "current page" redirect points at the GraphQL endpoint, and WordPress's own frontend is blank (Astro is the frontend)
+function memoria_render_loginout_block(string $block_content): string {
+	$redirect = admin_url();
+	$processor = new WP_HTML_Tag_Processor($block_content);
+
+	while ($processor->next_tag()) {
+		$tag = $processor->get_tag();
+
+		if ($tag === 'A' && str_contains((string) $processor->get_attribute('href'), 'redirect_to=')) {
+			$processor->set_attribute('href', wp_login_url($redirect));
+		} elseif ($tag === 'INPUT' && $processor->get_attribute('name') === 'redirect_to') {
+			$processor->set_attribute('value', $redirect);
+		}
+	}
+
+	return $processor->get_updated_html();
+}
+add_filter('render_block_core/loginout', 'memoria_render_loginout_block', 10, 1);
+
 // Remove unused Appearance submenu items (priority 999 ensures WP has registered them first)
 function memoria_admin_menu_removal(): void {
 	global $submenu;

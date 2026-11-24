@@ -245,6 +245,31 @@ function memoria_render_search_block(string $block_content): string {
 }
 add_filter('render_block_core/search', 'memoria_render_search_block');
 
+// Add each playlist track's audio URL and image to its button for memoria's waveform player (playlist.ts)
+// Note: WordPress only puts these in its Interactivity API state (playlist.php), which doesn't reach renderedContent
+function memoria_render_playlist_track_data(string $block_content, array $block): string {
+	$src = $block['attrs']['src'] ?? '';
+	if (!$src) {
+		return $block_content;
+	}
+
+	$processor = new WP_HTML_Tag_Processor($block_content);
+
+	if ($processor->next_tag(['class_name' => 'wp-block-playlist-track__button'])) {
+		$processor->set_attribute('data-src', esc_url_raw($src));
+
+		// The image is only in the markup when the playlist shows images, but the player can still use it
+		$image = $block['attrs']['image'] ?? '';
+		if ($image) {
+			$processor->set_attribute('data-image', esc_url_raw($image));
+			$processor->set_attribute('data-image-alt', $block['attrs']['imageAlt'] ?? '');
+		}
+	}
+
+	return $processor->get_updated_html();
+}
+add_filter('render_block_core/playlist-track', 'memoria_render_playlist_track_data', 10, 2);
+
 // Hide blocks the static frontend can't support from the inserter (date archives, comments, login)
 // Note: they stay registered, so any already in content still render (e.g. the block preview posts used for styling)
 function memoria_allowed_block_types(bool|array $allowed_block_types): bool|array {
